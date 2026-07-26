@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Connections Dictionary</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main>
+      <div class="eyebrow">NYT CONNECTIONS</div>
+      <h1>Dictionary</h1>
+      <p>Click any game card to see a definition beside it.</p>
+      <label class="toggle">
+        <span>Show definitions</span>
+        <input id="enabled" type="checkbox">
+      </label>
+      <p class="note">Definitions come from the free Dictionary API. Ambiguous puzzle entries also include links to Merriam-Webster and Oxford.</p>
+      <div id="saved" role="status" aria-live="polite"></div>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>
