@@ -347,19 +347,10 @@
   }
 
   document.addEventListener("click", (event) => {
-    if (!isEnabled) return;
+    if (!currentAnchor) return;
     const ui = getUi();
     if (event.composedPath().includes(ui.host)) return;
-
-    const card = findWordCard(event.target);
-    if (!card) {
-      if (!currentAnchor) return;
-      closePopup();
-      return;
-    }
-
-    clearHoverTimer();
-    lookUp(card.word, card.element);
+    closePopup();
   });
 
   document.addEventListener("pointerover", (event) => {
@@ -396,6 +387,14 @@
   });
 
   document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      if (!currentAnchor) return;
+      event.preventDefault();
+      clearHoverTimer();
+      closePopup();
+      return;
+    }
+
     if (!isEnabled || !hoverLookup || event.repeat) return;
     if (!isHoldKeyEvent(event) || !lastHoverCard) return;
     scheduleHoverLookup(lastHoverCard);
