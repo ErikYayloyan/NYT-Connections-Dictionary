@@ -23,7 +23,7 @@ After editing the extension, use the reload button on its `chrome://extensions` 
 
 ## Dictionary choice
 
-The first version uses [Free Dictionary API](https://dictionaryapi.dev/) so it works without an account or secret key. Merriam-Webster is the strongest fit for an authoritative general U.S. dictionary, but its API requires developer registration, has non-commercial and request-limit conditions, and requires its official branding. It is therefore not bundled silently into this prototype.
+The first version uses [Free Dictionary API](https://freedictionaryapi.com/) so it works without an account or secret key. Merriam-Webster is the strongest fit for an authoritative general U.S. dictionary, but its API requires developer registration, has non-commercial and request-limit conditions, and requires its official branding. It is therefore not bundled silently into this prototype.
 
 ## Development
 

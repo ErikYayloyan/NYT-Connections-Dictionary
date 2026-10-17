@@ -10,10 +10,14 @@
     <main>
       <div class="eyebrow">NYT CONNECTIONS</div>
       <h1>Dictionary</h1>
-      <p>Click any game card to see a definition beside it.</p>
+      <p>Click any game card to see a definition beside it. Optionally look up words on hover.</p>
       <label class="toggle">
         <span>Show definitions</span>
         <input id="enabled" type="checkbox">
+      </label>
+      <label class="toggle">
+        <span>Lookup on hover</span>
+        <input id="hoverLookup" type="checkbox">
       </label>
       <p class="note">Definitions come from the free Dictionary API. Ambiguous puzzle entries also include links to Merriam-Webster and Oxford.</p>
       <div id="saved" role="status" aria-live="polite"></div>

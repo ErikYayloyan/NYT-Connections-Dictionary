@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Click a word in NYT Connections to see its definition without leaving the game.",
   "permissions": ["storage"],
-  "host_permissions": ["https://api.dictionaryapi.dev/*"],
+  "host_permissions": ["https://freedictionaryapi.com/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"

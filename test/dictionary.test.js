@@ -12,23 +12,35 @@ test("cleans puzzle card text", () => {
 });
 
 test("normalizes definitions and pronunciation", () => {
-  const result = normalizeFreeDictionaryResponse([{
+  const result = normalizeFreeDictionaryResponse({
     word: "bat",
-    phonetics: [{ text: "/bat/", audio: "//audio.example/bat.mp3" }],
-    meanings: [{
+    entries: [{
       partOfSpeech: "noun",
-      definitions: [{ definition: "A club used to hit a ball.", example: "She swung the bat." }]
+      pronunciations: [{ type: "ipa", text: "/bat/" }],
+      senses: [{
+        definition: "A club used to hit a ball.",
+        examples: ["She swung the bat."]
+      }]
     }],
-    sourceUrls: ["https://example.test/bat"]
-  }], "bat");
+    source: { url: "https://example.test/bat" }
+  }, "bat");
 
   assert.equal(result.word, "bat");
-  assert.equal(result.audio, "https://audio.example/bat.mp3");
+  assert.equal(result.phonetic, "/bat/");
+  assert.equal(result.audio, "");
   assert.deepEqual(result.definitions[0], {
     partOfSpeech: "noun",
     definition: "A club used to hit a ball.",
     example: "She swung the bat."
   });
+});
+
+test("returns null for empty entries", () => {
+  assert.equal(normalizeFreeDictionaryResponse({
+    word: "notaword",
+    entries: [],
+    source: { url: "https://en.wiktionary.org" }
+  }, "notaword"), null);
 });
 
 test("returns null for a missing word", async () => {

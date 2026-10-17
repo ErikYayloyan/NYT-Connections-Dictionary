@@ -1,4 +1,4 @@
-const FREE_DICTIONARY_ENDPOINT = "https://api.dictionaryapi.dev/api/v2/entries/en/";
+const FREE_DICTIONARY_ENDPOINT = "https://freedictionaryapi.com/api/v1/entries/en/";
 
 export function cleanLookupTerm(value) {
   return String(value ?? "")
@@ -10,46 +10,45 @@ export function cleanLookupTerm(value) {
 }
 
 export function normalizeFreeDictionaryResponse(payload, requestedWord) {
-  if (!Array.isArray(payload) || payload.length === 0) {
+  const entries = Array.isArray(payload?.entries) ? payload.entries : [];
+  if (entries.length === 0) {
     return null;
   }
 
   const definitions = [];
   const seen = new Set();
 
-  for (const entry of payload) {
-    for (const meaning of entry.meanings ?? []) {
-      for (const item of meaning.definitions ?? []) {
-        const definition = String(item.definition ?? "").trim();
-        if (!definition) continue;
+  for (const entry of entries) {
+    const partOfSpeech = entry.partOfSpeech ?? "";
+    for (const sense of entry.senses ?? []) {
+      const definition = String(sense.definition ?? "").trim();
+      if (!definition) continue;
 
-        const key = `${meaning.partOfSpeech ?? ""}:${definition}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
+      const key = `${partOfSpeech}:${definition}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
 
-        definitions.push({
-          partOfSpeech: meaning.partOfSpeech ?? "",
-          definition,
-          example: String(item.example ?? "").trim()
-        });
-      }
+      definitions.push({
+        partOfSpeech,
+        definition,
+        example: String(sense.examples?.[0] ?? "").trim()
+      });
     }
   }
 
   if (definitions.length === 0) return null;
 
-  const firstEntry = payload[0];
-  const phonetic = firstEntry.phonetic
-    || firstEntry.phonetics?.find((item) => item.text)?.text
+  const phonetic = entries
+    .flatMap((entry) => entry.pronunciations ?? [])
+    .find((item) => item.text)?.text
     || "";
-  const audio = firstEntry.phonetics?.find((item) => item.audio)?.audio || "";
-  const sourceUrl = firstEntry.sourceUrls?.[0]
+  const sourceUrl = payload.source?.url
     || `https://en.wiktionary.org/wiki/${encodeURIComponent(requestedWord)}`;
 
   return {
-    word: firstEntry.word || requestedWord,
+    word: payload.word || requestedWord,
     phonetic,
-    audio: audio.startsWith("//") ? `https:${audio}` : audio,
+    audio: "",
     definitions: definitions.slice(0, 6),
     sourceName: "Free Dictionary API",
     sourceUrl

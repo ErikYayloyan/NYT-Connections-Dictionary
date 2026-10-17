@@ -8,15 +8,36 @@
   let requestNumber = 0;
   let currentAnchor = null;
   let isEnabled = true;
+  let hoverLookup = false;
+  let hoverTimer = null;
+  let hoverWord = null;
 
-  chrome.storage.sync.get({ enabled: true }).then((settings) => {
+  chrome.storage.sync.get({ enabled: true, hoverLookup: false }).then((settings) => {
     isEnabled = settings.enabled;
+    hoverLookup = settings.hoverLookup === true;
   });
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== "sync" || !changes.enabled) return;
-    isEnabled = changes.enabled.newValue !== false;
-    if (!isEnabled) closePopup();
+    if (area !== "sync") return;
+    if (changes.enabled) {
+      isEnabled = changes.enabled.newValue !== false;
+      if (!isEnabled) {
+        clearHoverTimer();
+        closePopup();
+      }
+    }
+    if (changes.hoverLookup) {
+      hoverLookup = changes.hoverLookup.newValue === true;
+      if (!hoverLookup) clearHoverTimer();
+    }
   });
+
+  function clearHoverTimer() {
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
+    }
+    hoverWord = null;
+  }
 
   function readCardText(element) {
     const text = String(element.innerText || element.textContent || "")
@@ -291,7 +312,40 @@
       return;
     }
 
+    clearHoverTimer();
     lookUp(card.word, card.element);
+  });
+
+  document.addEventListener("pointerover", (event) => {
+    if (!isEnabled || !hoverLookup) return;
+    const ui = getUi();
+    if (event.composedPath().includes(ui.host)) {
+      clearHoverTimer();
+      return;
+    }
+
+    const card = findWordCard(event.target);
+    if (!card) {
+      clearHoverTimer();
+      return;
+    }
+    if (hoverWord === card.word && currentAnchor === card.element) return;
+
+    clearHoverTimer();
+    hoverWord = card.word;
+    hoverTimer = window.setTimeout(() => {
+      hoverTimer = null;
+      lookUp(card.word, card.element);
+    }, 350);
+  });
+
+  document.addEventListener("pointerout", (event) => {
+    if (!isEnabled || !hoverLookup) return;
+    const next = event.relatedTarget;
+    if (next instanceof Element && findWordCard(next)) return;
+    const ui = getUi();
+    if (next instanceof Node && (ui.host === next || ui.host.contains(next) || ui.contains(next))) return;
+    clearHoverTimer();
   });
 
   window.addEventListener("resize", () => currentAnchor && positionPopup(currentAnchor));
