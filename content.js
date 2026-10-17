@@ -5,16 +5,25 @@
     "continue", "back", "close", "settings", "subscribe", "log in"
   ]);
 
+  const HOLD_KEYS = new Set(["Alt", "Control", "Shift", "Meta", "None"]);
+
   let requestNumber = 0;
   let currentAnchor = null;
   let isEnabled = true;
   let hoverLookup = false;
+  let hoverHoldKey = "Alt";
   let hoverTimer = null;
   let hoverWord = null;
+  let lastHoverCard = null;
 
-  chrome.storage.sync.get({ enabled: true, hoverLookup: false }).then((settings) => {
+  chrome.storage.sync.get({
+    enabled: true,
+    hoverLookup: false,
+    hoverHoldKey: "Alt"
+  }).then((settings) => {
     isEnabled = settings.enabled;
     hoverLookup = settings.hoverLookup === true;
+    hoverHoldKey = HOLD_KEYS.has(settings.hoverHoldKey) ? settings.hoverHoldKey : "Alt";
   });
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "sync") return;
@@ -22,12 +31,21 @@
       isEnabled = changes.enabled.newValue !== false;
       if (!isEnabled) {
         clearHoverTimer();
+        lastHoverCard = null;
         closePopup();
       }
     }
     if (changes.hoverLookup) {
       hoverLookup = changes.hoverLookup.newValue === true;
-      if (!hoverLookup) clearHoverTimer();
+      if (!hoverLookup) {
+        clearHoverTimer();
+        lastHoverCard = null;
+      }
+    }
+    if (changes.hoverHoldKey) {
+      const next = changes.hoverHoldKey.newValue;
+      hoverHoldKey = HOLD_KEYS.has(next) ? next : "Alt";
+      clearHoverTimer();
     }
   });
 
@@ -37,6 +55,34 @@
       hoverTimer = null;
     }
     hoverWord = null;
+  }
+
+  function isHoldKeyDown(event) {
+    if (hoverHoldKey === "None") return true;
+    if (hoverHoldKey === "Alt") return event.altKey;
+    if (hoverHoldKey === "Control") return event.ctrlKey;
+    if (hoverHoldKey === "Shift") return event.shiftKey;
+    if (hoverHoldKey === "Meta") return event.metaKey;
+    return false;
+  }
+
+  function isHoldKeyEvent(event) {
+    if (hoverHoldKey === "None") return false;
+    return event.key === hoverHoldKey
+      || (hoverHoldKey === "Control" && (event.key === "Control" || event.key === "Ctrl"))
+      || (hoverHoldKey === "Meta" && (event.key === "Meta" || event.key === "OS"));
+  }
+
+  function scheduleHoverLookup(card) {
+    if (!card) return;
+    if (hoverWord === card.word && currentAnchor === card.element) return;
+
+    clearHoverTimer();
+    hoverWord = card.word;
+    hoverTimer = window.setTimeout(() => {
+      hoverTimer = null;
+      lookUp(card.word, card.element);
+    }, 350);
   }
 
   function readCardText(element) {
@@ -326,17 +372,17 @@
 
     const card = findWordCard(event.target);
     if (!card) {
+      lastHoverCard = null;
       clearHoverTimer();
       return;
     }
-    if (hoverWord === card.word && currentAnchor === card.element) return;
 
-    clearHoverTimer();
-    hoverWord = card.word;
-    hoverTimer = window.setTimeout(() => {
-      hoverTimer = null;
-      lookUp(card.word, card.element);
-    }, 350);
+    lastHoverCard = card;
+    if (!isHoldKeyDown(event)) {
+      clearHoverTimer();
+      return;
+    }
+    scheduleHoverLookup(card);
   });
 
   document.addEventListener("pointerout", (event) => {
@@ -345,9 +391,23 @@
     if (next instanceof Element && findWordCard(next)) return;
     const ui = getUi();
     if (next instanceof Node && (ui.host === next || ui.host.contains(next) || ui.contains(next))) return;
+    lastHoverCard = null;
     clearHoverTimer();
   });
 
+  document.addEventListener("keydown", (event) => {
+    if (!isEnabled || !hoverLookup || event.repeat) return;
+    if (!isHoldKeyEvent(event) || !lastHoverCard) return;
+    scheduleHoverLookup(lastHoverCard);
+  });
+
+  document.addEventListener("keyup", (event) => {
+    if (!isEnabled || !hoverLookup) return;
+    if (!isHoldKeyEvent(event)) return;
+    clearHoverTimer();
+  });
+
+  window.addEventListener("blur", () => clearHoverTimer());
   window.addEventListener("resize", () => currentAnchor && positionPopup(currentAnchor));
   window.addEventListener("scroll", () => currentAnchor && positionPopup(currentAnchor), true);
 })();

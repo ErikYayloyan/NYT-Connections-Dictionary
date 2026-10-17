@@ -10,7 +10,7 @@
     <main>
       <div class="eyebrow">NYT CONNECTIONS</div>
       <h1>Dictionary</h1>
-      <p>Click any game card to see a definition beside it. Optionally look up words on hover.</p>
+      <p>Click any game card to see a definition beside it. Optionally look up words by holding a key and hovering.</p>
       <label class="toggle">
         <span>Show definitions</span>
         <input id="enabled" type="checkbox">
@@ -18,6 +18,16 @@
       <label class="toggle">
         <span>Lookup on hover</span>
         <input id="hoverLookup" type="checkbox">
+      </label>
+      <label class="field" for="hoverHoldKey">
+        <span>Hold key for hover</span>
+        <select id="hoverHoldKey">
+          <option value="Alt">Alt / Option</option>
+          <option value="Control">Control</option>
+          <option value="Shift">Shift</option>
+          <option value="Meta">⌘ Command</option>
+          <option value="None">None (hover only)</option>
+        </select>
       </label>
       <p class="note">Definitions come from the free Dictionary API. Ambiguous puzzle entries also include links to Merriam-Webster and Oxford.</p>
       <div id="saved" role="status" aria-live="polite"></div>

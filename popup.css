@@ -12,8 +12,16 @@ p { margin: 0 0 17px; color: #4c4944; }
   display: flex; align-items: center; justify-content: space-between; gap: 20px;
   margin: 0; padding: 12px 0; border-top: 1px solid #dedad1; font-weight: 700;
 }
-.toggle:last-of-type { margin-bottom: 18px; border-bottom: 1px solid #dedad1; }
-input { width: 38px; height: 21px; accent-color: #5a594e; cursor: pointer; }
+.field {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  margin: 0 0 18px; padding: 12px 0; border-block: 1px solid #dedad1; font-weight: 700;
+}
+.field select {
+  max-width: 148px; padding: 6px 8px; border: 1px solid #cfc9bd; border-radius: 8px;
+  background: #fff; color: #1b1b1b; font: inherit; cursor: pointer;
+}
+.field select:disabled { cursor: not-allowed; opacity: .45; }
+input[type="checkbox"] { width: 38px; height: 21px; accent-color: #5a594e; cursor: pointer; }
 input:disabled { cursor: not-allowed; opacity: .45; }
 .note { margin-bottom: 0; color: #716d66; font-size: 12px; }
 #saved { min-height: 16px; margin-top: 8px; color: #4d684d; font-size: 11px; }
